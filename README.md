@@ -1,6 +1,14 @@
-# Wobb Frontend Assignment
+# Wobb Creator Hub
 
-A starter influencer search application built with **React**, **TypeScript**, **Vite**, and **Tailwind CSS**. This project is intentionally left in a rough-but-working state for candidates to improve.
+> **Wobb Frontend Assignment** — A production-quality influencer discovery and campaign management platform built with React, TypeScript, Vite, and Tailwind CSS.
+
+---
+
+## Live Preview
+
+> 🚀 App runs locally at `http://localhost:5173` after setup.
+
+---
 
 ## Getting Started
 
@@ -11,71 +19,181 @@ npm run dev
 
 Open [http://localhost:5173](http://localhost:5173) to view the app.
 
-## What's Included
+| Command | Description |
+|---|---|
+| `npm run dev` | Start development server (Vite HMR) |
+| `npm run build` | Production build + TypeScript check |
+| `npm run lint` | ESLint with React hooks rules |
 
-- **Search / Dashboard** — filter influencers by platform (Instagram, YouTube, TikTok) and search by username or full name
-- **Profile Details** — click a profile to view extended data loaded from individual JSON files
-- **Routing** — `react-router-dom` with `/` (search) and `/profile/:username` (details)
+---
 
-Sample data lives in:
+## What Was Built
 
-- `src/assets/data/search/` — platform search results (10 profiles each)
-- `src/assets/data/profiles/` — detailed profile JSON per username
+This project went through a full end-to-end implementation covering all 6 assignment tasks:
 
-## How to Submit
+### ✅ 1. Bug Fixes & Code Quality
 
-1. **Download or clone** this starter project to your machine.
-2. **Create a new repository** on your own GitHub account. Do not fork the original assignment repo — push your work to a repo you own.
-3. Complete the tasks below and push your changes to that repository.
-4. **Share the public GitHub repository URL** with us as your submission.
+| Bug | Fix Applied |
+|-----|-------------|
+| `--ignoreDeprecations` TypeScript compiler error | Removed invalid flag from `tsconfig.app.json` |
+| Broken profile images (dead URLs) | Built `Avatar.tsx` with gradient-initials fallback + `onError` reset state |
+| Profile pages not opening (`/profile/MrBeast6000`) | Case-insensitive dynamic file matching in `profileLoader.ts` |
+| Non-existent profiles (leomessi, charlidamelio) | Dynamic profile synthesis from search index data — any creator opens |
+| Inner component declared inside render function | Refactored `Layout.tsx` to use JSX helper instead of inner component |
+| `setState` called synchronously inside `useEffect` | Fixed with cleanup function pattern |
+| Duplicate export in `ProfileCard.tsx` | Cleaned up leftover code from failed edit |
 
-### Deadline (strict)
+### ✅ 2. UI/UX Redesign — Industry Level
 
-- **Due:** **2 July 2026, 2:00 PM IST** (Indian Standard Time, UTC+5:30)
-- **Any git commits made after this deadline will disqualify your submission.** We will only consider the repository state as of the deadline; late commits will not be reviewed.
-- Make sure your final work is pushed **before** the cutoff.
+Complete redesign from a basic prototype to a professional **B2B SaaS influencer platform** (inspired by Linear, Vercel Dashboard, AspireIQ):
 
-## AI Usage
+**Design System**
+- **Inter** font (industry-standard, not a gaming font)
+- `zinc-950/900/800` dark palette — no glow gradients, no glass-blur
+- Single `indigo-500` accent color — professional and consistent
+- CSS custom properties (`--bg-base`, `--accent`, `--border-subtle`, etc.) for full token control
+- Utility classes: `.surface-card`, `.stat-card`, `.badge`, `.btn-primary`, `.btn-ghost`, `.nav-item`, `.shimmer`
 
-You may use any AI tools (Cursor, ChatGPT, Claude, GitHub Copilot, etc.). We are evaluating your final solution and engineering decisions.
+**Layout**
+- Fixed **220px left sidebar** — brand, Discover nav, inline saved-list section
+- Collapsible to hamburger menu on mobile
+- Top header bar with page title + subtitle + contextual action area
+- `Discover › @username` breadcrumb navigation on detail pages
 
-## Your Tasks
+**Discover Page**
+- Platform tabs + Search + **Sort** (Followers ↓, Engagement ↓, Followers ↑) — single toolbar
+- Responsive grid: 1 → 2 → 3 → 4 columns
+- Creator cards: left-aligned, engagement tier badge (🟢 High / 🟡 Medium / ⚪ Low)
 
-Complete the following as part of your submission:
+**Profile Detail Page**
+- Horizontal creator identity card
+- Save button in the header bar
+- Clean KPI stat grid (followers, engagement, avg likes, avg comments, avg views, reels plays)
+- Shimmer skeleton loading states
 
-1. **Find and fix all bugs and quality issues** — the codebase contains intentional bugs and quality issues. Identify and resolve them.
+### ✅ 3. Zustand State Management
 
-2. **Completely redesign the UI/UX** — replace the basic layout with a polished, modern interface. Focus on usability, visual hierarchy, and delight.
+Replaced all React Context usage with a single Zustand store:
 
-3. **Replace React Context with Zustand** — when you implement state management for the selected list, use [Zustand](https://github.com/pmndrs/zustand) instead of React Context.
+```
+src/store/useListStore.ts
+```
 
-4. **Implement "Select profile & Add to List"** — the disabled "Add to List" button is a stub. Build the full feature:
-   - Select / add profiles to a persistent list
-   - View and manage the selected list
-   - Handle duplicates appropriately
+Features:
+- `selectedProfiles[]` — the saved list
+- `addProfile()` — duplicate-safe add
+- `removeProfile()` — remove by user ID
+- `clearList()` — reset all
+- `isInList()` — selector for individual card state
+- **`persist` middleware** — auto-synced to `localStorage` on every change
 
-5. **Improve code quality and project structure** — refactor as needed, add proper types, and follow React best practices.
+Granular selectors prevent unnecessary re-renders: each `ProfileCard` subscribes only to its own `isSelected` state, not the whole list.
 
-6. **Optimize performance** — apply sensible optimizations where appropriate.
+### ✅ 4. Select Profile & Add to List
 
-7. **Use any libraries you need** — you are not limited to the current stack. Choose tools that help you deliver a great result (UI kits, state managers, testing libraries, etc.).
+Full feature implementation:
 
-## Scripts
+| Requirement | Implementation |
+|---|---|
+| Add profiles to a list | Save button on every card and on the detail page header |
+| Prevent duplicates | `selectedProfiles.some(p => p.user_id === id)` guard in `addProfile` |
+| Display saved profiles | Expandable "My List" section in sidebar with avatar, platform dot, follower count |
+| Remove profiles | Hover-reveal `×` button per entry + "Clear All" button |
+| Persistent after refresh | Zustand `persist` middleware → `localStorage` |
+| Export | "Export List" copies `@username (platform)` lines to clipboard |
 
-| Command        | Description              |
-| -------------- | ------------------------ |
-| `npm run dev`  | Start development server |
-| `npm run build`| Production build         |
-| `npm run lint` | Run ESLint               |
+### ✅ 5. Code Quality & Project Structure
 
-## Submission Notes
+```
+src/
+├── assets/data/          # Static JSON — search indexes + detailed profiles
+├── components/
+│   ├── Avatar.tsx        # Image with gradient-initials fallback
+│   ├── Layout.tsx        # Sidebar + header shell
+│   ├── MetricCard.tsx    # Reusable KPI stat card (React.memo)
+│   ├── PlatformFilter.tsx# Platform tabs + search + sort toolbar
+│   ├── ProfileCard.tsx   # Creator card (React.memo + granular selectors)
+│   ├── ProfileList.tsx   # Grid with empty state
+│   ├── SearchBar.tsx     # Controlled search input
+│   └── VerifiedBadge.tsx # Blue verified checkmark
+├── hooks/
+│   └── useDebounce.ts    # 200ms debounce for search input
+├── pages/
+│   ├── SearchPage.tsx    # Discover page
+│   └── ProfileDetailPage.tsx  # Creator analytics dashboard
+├── store/
+│   └── useListStore.ts   # Zustand store with persist
+├── types/
+│   └── index.ts          # Shared TypeScript interfaces
+└── utils/
+    ├── dataHelpers.ts    # extractProfiles, filterProfiles, PLATFORMS
+    ├── formatters.ts     # formatFollowers, formatEngagementRate
+    └── profileLoader.ts  # Case-insensitive dynamic profile loader
+```
 
-- Document any assumptions or trade-offs in your README
-- Ensure `npm run build` passes before submitting
-- Focus on demonstrating your judgment — not every possible feature needs to be built, but the core assignment items should be addressed thoughtfully
-- Double-check that your repo is public (or that we have access) and that the link is included in your submission
-- Please make meaningful commits throughout your work. We may review your commit history.
-- **Bonus:** Deploying the app (e.g. Vercel, Netlify, GitHub Pages) is optional but will be considered a plus — include the live URL in your submission if you do
+**React best practices applied:**
+- `React.memo` on `ProfileCard` and `MetricCard`
+- `useCallback` on all event handlers passed as props
+- `useMemo` on filtered/sorted profile lists and avatar gradient hashes
+- Granular Zustand selectors (each card subscribes to only its own data)
+- `useDebounce` hook to prevent filtering on every keystroke
 
-Good luck!
-# Wobb-Assignment
+### ✅ 6. Performance Optimizations
+
+| Optimization | Impact |
+|---|---|
+| `React.memo(ProfileCard)` | ~20 cards skip re-render on every search keystroke |
+| Granular Zustand selectors | Saving one creator re-renders only that card, not all 20 |
+| `useDebounce(searchQuery, 200ms)` | `filterProfiles()` only runs 200ms after user pauses typing |
+| `useMemo` on `allProfiles` + `filtered` + `sorted` | Recalculate only when platform/query/sort actually change |
+| `useMemo` on avatar gradient hash | String hash runs once per unique username, not every render |
+| `useCallback` on all prop callbacks | Stable references preserve memoization across parent renders |
+
+---
+
+## Tech Stack
+
+| Layer | Choice | Why |
+|---|---|---|
+| Framework | React 19 + TypeScript | Assignment requirement |
+| Build | Vite 8 | Fast HMR, native ESM |
+| Styling | Tailwind CSS v4 | Utility-first, co-located styles |
+| State | **Zustand** + persist | Lightweight, no boilerplate, localStorage built-in |
+| Routing | React Router v7 | Declarative, file-based-ready |
+| Icons | Lucide React | Consistent, tree-shakeable |
+| Fonts | Inter (Google Fonts) | Industry-standard UI font |
+
+---
+
+## Data Notes
+
+- `src/assets/data/search/` — 3 platform JSON files, ~10 profiles each
+- `src/assets/data/profiles/` — detailed JSON per username (loaded lazily via `import.meta.glob`)
+- Profiles not in the `profiles/` directory are **synthesized** from search index data — so every creator card opens correctly without a 404
+
+---
+
+## Assumptions & Trade-offs
+
+- **No backend** — all data is static JSON. A real app would hit an API.
+- **Synthesized profiles** — creators without a detailed JSON file get a generated profile from their search-index summary. All metrics available from the search index are shown.
+- **Export format** — clipboard copy of `@username (platform)` lines. CSV export could be added with a library like `papaparse`.
+- **No authentication** — out of scope for this assignment.
+- **Accessibility** — semantic HTML, proper button types, `title` attributes on icon-only buttons, keyboard-navigable. Full ARIA audit would be next step.
+
+---
+
+## Commit History
+
+Meaningful commits throughout, each addressing a specific concern:
+
+```
+feat: industry-level UI redesign — sidebar layout, Inter font, solid design system
+perf: memoize components, debounce search, granular Zustand selectors
+feat: code quality refactor — SearchBar, MetricCard components, TypeScript types
+fix: profile load fallback — dynamic synthesis for missing profiles
+fix: avatar fallback for broken image URLs
+fix: tsconfig ignoreDeprecations error, case-sensitive profile filenames
+feat: Zustand store with persist middleware, Add to List feature
+feat: UI/UX redesign — dark mode, platform cards, profile analytics dashboard
+```
