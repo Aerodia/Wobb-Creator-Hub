@@ -8,20 +8,14 @@ import { extractProfiles, filterProfiles } from "@/utils/dataHelpers";
 export function SearchPage() {
   const [platform, setPlatform] = useState<Platform>("instagram");
   const [searchQuery, setSearchQuery] = useState("");
-  const [clickCount, setClickCount] = useState(0);
 
   const allProfiles = extractProfiles(platform);
   const filtered = filterProfiles(allProfiles, searchQuery);
 
-  const handleProfileClick = (username: string) => {
-    setClickCount(clickCount + 1);
-    console.log("Clicked profile:", username, "total clicks:", clickCount);
-  };
-
   return (
-    <Layout title="Find Influencers">
-      <p className="text-gray-500 mb-4 text-sm">
-        Browse top creators across social platforms
+    <Layout title="Discover Top Creators">
+      <p className="text-slate-400 mb-8 max-w-xl text-sm leading-relaxed">
+        Analyze real-time metrics, search by keywords, and save the best-performing creators to your custom marketing lists.
       </p>
 
       <PlatformFilter
@@ -34,15 +28,20 @@ export function SearchPage() {
         onSearchChange={setSearchQuery}
       />
 
-      <p className="text-xs text-gray-400 mb-2">
-        Showing {filtered.length} of {allProfiles.length} on {platform}
-      </p>
+      <div className="flex items-center justify-between mb-4 px-1">
+        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+          Showing {filtered.length} of {allProfiles.length} creators
+        </p>
+        <span className="text-xs font-bold text-violet-400 capitalize">
+          Active: {platform}
+        </span>
+      </div>
 
       <ProfileList
         profiles={filtered}
         platform={platform}
         searchQuery={searchQuery}
-        onProfileClick={handleProfileClick}
+        onProfileClick={() => {}}
       />
     </Layout>
   );
