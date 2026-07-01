@@ -2,7 +2,7 @@ import { useState, useCallback, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useListStore } from "@/store/useListStore";
 import {
-  Search, Bookmark, Trash2, X, ClipboardCopy, Check, Menu, Zap, ChevronRight,
+  Search, Bookmark, Trash2, X, ClipboardCopy, Check, Menu, Zap, ChevronRight, GitCompareArrows,
 } from "lucide-react";
 import { Avatar } from "./Avatar";
 
@@ -64,6 +64,26 @@ export function Layout({ children, title, subtitle, headerActions }: LayoutProps
         >
           <Search className="w-4 h-4 flex-shrink-0" />
           <span>Discover</span>
+        </Link>
+        <Link
+          to="/compare"
+          className={`nav-item ${isActive("/compare") ? "active" : ""}`}
+          onClick={onClose}
+        >
+          <GitCompareArrows className="w-4 h-4 flex-shrink-0" />
+          <span className="flex-1">Compare</span>
+          {selectedProfiles.length >= 2 && (
+            <span
+              className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full border"
+              style={{
+                color: isActive("/compare") ? "var(--accent)" : "var(--text-muted)",
+                background: isActive("/compare") ? "var(--accent-bg)" : "var(--bg-elevated)",
+                borderColor: isActive("/compare") ? "var(--accent-border)" : "var(--border-subtle)",
+              }}
+            >
+              {selectedProfiles.length}
+            </span>
+          )}
         </Link>
       </div>
 
@@ -134,6 +154,21 @@ export function Layout({ children, title, subtitle, headerActions }: LayoutProps
             )}
 
             <div className="mt-2 pt-2 space-y-1 border-t border-[var(--border-subtle)]">
+              {selectedProfiles.length >= 2 && (
+                <Link
+                  to="/compare"
+                  onClick={onClose}
+                  className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors cursor-pointer no-underline"
+                  style={{
+                    color: "var(--accent)",
+                    background: "var(--accent-bg)",
+                    borderColor: "var(--accent-border)",
+                  }}
+                >
+                  <GitCompareArrows className="w-3.5 h-3.5" />
+                  <span>Compare {selectedProfiles.length} Creators</span>
+                </Link>
+              )}
               <button
                 onClick={handleExport}
                 className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/15 text-indigo-400 text-xs font-medium border border-indigo-500/20 transition-colors cursor-pointer"
