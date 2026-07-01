@@ -40,13 +40,14 @@ export function ProfileList({ profiles, platform, searchQuery, onProfileClick }:
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-      {profiles.map((profile) => (
+      {profiles.map((profile, i) => (
         <ProfileCard
           key={profile.user_id}
           profile={profile}
           platform={platform}
           searchQuery={searchQuery}
           onProfileClick={stableOnProfileClick}
+          index={i}
         />
       ))}
     </div>

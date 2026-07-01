@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Platform, UserProfileSummary } from "@/types";
 import { VerifiedBadge } from "./VerifiedBadge";
@@ -12,31 +12,33 @@ interface ProfileCardProps {
   platform: Platform;
   searchQuery: string;
   onProfileClick?: (username: string) => void;
+  /** Grid position — used to stagger the card entry animation */
+  index?: number;
 }
 
-// Engagement tier badge
 function EngagementBadge({ rate }: { rate?: number }) {
   if (rate === undefined) return null;
   const pct = rate * 100;
-  if (pct >= 3)   return <span className="badge badge-high">{pct.toFixed(1)}% eng.</span>;
-  if (pct >= 1)   return <span className="badge badge-medium">{pct.toFixed(1)}% eng.</span>;
-  return              <span className="badge badge-low">{pct.toFixed(1)}% eng.</span>;
+  if (pct >= 3)  return <span className="badge badge-high">{pct.toFixed(1)}% eng.</span>;
+  if (pct >= 1)  return <span className="badge badge-medium">{pct.toFixed(1)}% eng.</span>;
+  return             <span className="badge badge-low">{pct.toFixed(1)}% eng.</span>;
 }
 
-// Platform badge
 function PlatformBadge({ platform }: { platform: Platform }) {
   return <span className={`badge badge-${platform}`}>{platform}</span>;
 }
 
-function ProfileCardComponent({ profile, platform, onProfileClick }: ProfileCardProps) {
+function ProfileCardComponent({ profile, platform, onProfileClick, index = 0 }: ProfileCardProps) {
   const navigate = useNavigate();
 
-  // Granular Zustand selectors — only this card re-renders when its own saved state changes
-  const isSelected = useListStore((s) => s.selectedProfiles.some((p) => p.user_id === profile.user_id));
-  const addProfile = useListStore((s) => s.addProfile);
+  const isSelected   = useListStore((s) => s.selectedProfiles.some((p) => p.user_id === profile.user_id));
+  const addProfile   = useListStore((s) => s.addProfile);
   const removeProfile = useListStore((s) => s.removeProfile);
 
-  const username = profile.username || profile.handle || "creator";
+  // Drives the icon-pop animation on the bookmark when saving
+  const [justSaved, setJustSaved] = useState(false);
+
+  const username    = profile.username || profile.handle || "creator";
   const displayName = `@${username}`;
 
   const handleClick = useCallback(() => {
@@ -46,8 +48,14 @@ function ProfileCardComponent({ profile, platform, onProfileClick }: ProfileCard
 
   const handleToggle = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    if (isSelected) removeProfile(profile.user_id);
-    else addProfile(profile, platform);
+    if (isSelected) {
+      removeProfile(profile.user_id);
+    } else {
+      addProfile(profile, platform);
+      // Trigger pop animation briefly
+      setJustSaved(true);
+      setTimeout(() => setJustSaved(false), 500);
+    }
   }, [addProfile, isSelected, platform, profile, removeProfile]);
 
   const handleOpen = useCallback((e: React.MouseEvent) => {
@@ -55,7 +63,6 @@ function ProfileCardComponent({ profile, platform, onProfileClick }: ProfileCard
     handleClick();
   }, [handleClick]);
 
-  // Metric to show in second slot
   const secondStat = useMemo(() => {
     if (profile.engagement_rate !== undefined)
       return { value: formatEngagementRate(profile.engagement_rate), label: "Engagement" };
@@ -64,11 +71,14 @@ function ProfileCardComponent({ profile, platform, onProfileClick }: ProfileCard
     return null;
   }, [profile.avg_views, profile.engagement_rate]);
 
+  // Stagger delay capped at 8 cards to avoid long waits on large grids
+  const staggerDelay = `${Math.min(index, 8) * 45}ms`;
+
   return (
     <div
       onClick={handleClick}
-      className="surface-card p-5 flex flex-col gap-4 cursor-pointer relative"
-      style={{ borderRadius: "12px" }}
+      className="surface-card p-5 flex flex-col gap-4 cursor-pointer relative anim-fade-in-up"
+      style={{ borderRadius: "12px", animationDelay: staggerDelay }}
     >
       {/* Top row: Avatar + name + badges */}
       <div className="flex items-start gap-3">
@@ -76,7 +86,7 @@ function ProfileCardComponent({ profile, platform, onProfileClick }: ProfileCard
           <Avatar
             src={profile.picture}
             alt={profile.fullname}
-            className="w-12 h-12 rounded-full object-cover"
+            className="w-12 h-12 rounded-full object-cover transition-transform duration-200 group-hover:scale-105"
             fallbackText={username}
           />
           {profile.is_verified && (
@@ -119,27 +129,34 @@ function ProfileCardComponent({ profile, platform, onProfileClick }: ProfileCard
         )}
       </div>
 
-      {/* Actions */}
+      {/* Action buttons */}
       <div className="flex items-center gap-2">
         <button
           onClick={handleToggle}
-          className={isSelected ? "btn-saved flex-1 justify-center" : "btn-ghost flex-1 justify-center"}
+          className={`press-active ${isSelected ? "btn-saved flex-1 justify-center" : "btn-ghost flex-1 justify-center"}`}
           style={{ padding: "7px 12px", fontSize: "12px" }}
           title={isSelected ? "Remove from list" : "Save to list"}
         >
           {isSelected ? (
-            <><BookmarkCheck className="w-3.5 h-3.5" /><span>Saved</span></>
+            <>
+              {/* Show pop animation on the icon right when saved */}
+              <BookmarkCheck className={`w-3.5 h-3.5 ${justSaved ? "anim-icon-pop" : ""}`} />
+              <span>Saved</span>
+            </>
           ) : (
-            <><Bookmark className="w-3.5 h-3.5" /><span>Save</span></>
+            <>
+              <Bookmark className="w-3.5 h-3.5" />
+              <span>Save</span>
+            </>
           )}
         </button>
         <button
           onClick={handleOpen}
-          className="btn-ghost"
+          className="btn-ghost press-active"
           style={{ padding: "7px 10px" }}
           title="View profile"
         >
-          <ArrowUpRight className="w-3.5 h-3.5" />
+          <ArrowUpRight className="w-3.5 h-3.5 transition-transform duration-150 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
         </button>
       </div>
     </div>

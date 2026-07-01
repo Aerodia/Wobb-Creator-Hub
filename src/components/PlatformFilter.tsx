@@ -48,15 +48,18 @@ export function PlatformFilter({
               <button
                 key={p}
                 onClick={() => onChange(p)}
-                className="px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer"
-                style={isActive ? {
-                  color: colors.active,
-                  background: colors.bg,
-                  border: `1px solid ${colors.border}`,
-                } : {
-                  color: "var(--text-muted)",
-                  background: "transparent",
-                  border: "1px solid transparent",
+                className="px-3 py-1.5 rounded-md text-xs font-semibold cursor-pointer press-active relative"
+                style={{
+                  transition: "color 0.15s ease, background 0.15s ease, border-color 0.15s ease, transform 0.08s ease",
+                  ...(isActive ? {
+                    color: colors.active,
+                    background: colors.bg,
+                    border: `1px solid ${colors.border}`,
+                  } : {
+                    color: "var(--text-muted)",
+                    background: "transparent",
+                    border: "1px solid transparent",
+                  }),
                 }}
               >
                 {getPlatformLabel(p)}

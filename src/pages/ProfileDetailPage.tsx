@@ -132,9 +132,7 @@ export function ProfileDetailPage() {
         </Link>
 
         {/* ── Creator identity card ── */}
-        <div
-          className="surface-card p-6 flex flex-col sm:flex-row gap-5 items-start"
-        >
+        <div className="surface-card p-6 flex flex-col sm:flex-row gap-5 items-start anim-fade-in-up" style={{ animationDelay: "60ms" }}>
           {/* Avatar */}
           <div className="relative flex-shrink-0">
             <Avatar
@@ -196,74 +194,20 @@ export function ProfileDetailPage() {
           </h3>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            <MetricCard
-              icon={Users}
-              label="Followers"
-              value={formatFollowers(user.followers)}
-              subtext="Total audience"
-              colorClass="text-indigo-400"
-            />
-            <MetricCard
-              icon={Activity}
-              label="Engagement"
-              value={user.engagement_rate !== undefined ? (user.engagement_rate * 100).toFixed(2) + "%" : "N/A"}
-              subtext="Interaction rate"
-              colorClass="text-pink-400"
-            />
-            {user.posts_count !== undefined && (
-              <MetricCard
-                icon={Layers}
-                label="Posts"
-                value={user.posts_count.toLocaleString()}
-                subtext="Total publications"
-                colorClass="text-cyan-400"
-              />
-            )}
-            {user.avg_likes !== undefined && (
-              <MetricCard
-                icon={Heart}
-                label="Avg Likes"
-                value={formatFollowers(user.avg_likes)}
-                subtext="Per post average"
-                colorClass="text-rose-400"
-              />
-            )}
-            {user.avg_comments !== undefined && (
-              <MetricCard
-                icon={MessageSquare}
-                label="Avg Comments"
-                value={user.avg_comments.toLocaleString()}
-                subtext="Per post average"
-                colorClass="text-violet-400"
-              />
-            )}
-            {user.avg_views !== undefined && user.avg_views > 0 && (
-              <MetricCard
-                icon={Eye}
-                label="Avg Views"
-                value={formatFollowers(user.avg_views)}
-                subtext="Video view average"
-                colorClass="text-amber-400"
-              />
-            )}
-            {user.avg_reels_plays !== undefined && user.avg_reels_plays > 0 && (
-              <MetricCard
-                icon={CirclePlay}
-                label="Reels Plays"
-                value={formatFollowers(user.avg_reels_plays)}
-                subtext="Avg reels views"
-                colorClass="text-emerald-400"
-              />
-            )}
-            {(user.gender || user.age_group) && (
-              <MetricCard
-                icon={Award}
-                label="Audience"
-                value={user.gender ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1) : user.age_group || "—"}
-                subtext={user.age_group ? `Age: ${user.age_group}` : "Primary demographic"}
-                colorClass="text-yellow-400"
-              />
-            )}
+            {[
+              <MetricCard key="followers" icon={Users} label="Followers" value={formatFollowers(user.followers)} subtext="Total audience" colorClass="text-indigo-400" />,
+              <MetricCard key="engagement" icon={Activity} label="Engagement" value={user.engagement_rate !== undefined ? (user.engagement_rate * 100).toFixed(2) + "%" : "N/A"} subtext="Interaction rate" colorClass="text-pink-400" />,
+              ...(user.posts_count !== undefined ? [<MetricCard key="posts" icon={Layers} label="Posts" value={user.posts_count.toLocaleString()} subtext="Total publications" colorClass="text-cyan-400" />] : []),
+              ...(user.avg_likes !== undefined ? [<MetricCard key="likes" icon={Heart} label="Avg Likes" value={formatFollowers(user.avg_likes)} subtext="Per post average" colorClass="text-rose-400" />] : []),
+              ...(user.avg_comments !== undefined ? [<MetricCard key="comments" icon={MessageSquare} label="Avg Comments" value={user.avg_comments.toLocaleString()} subtext="Per post average" colorClass="text-violet-400" />] : []),
+              ...(user.avg_views !== undefined && user.avg_views > 0 ? [<MetricCard key="views" icon={Eye} label="Avg Views" value={formatFollowers(user.avg_views)} subtext="Video view average" colorClass="text-amber-400" />] : []),
+              ...(user.avg_reels_plays !== undefined && user.avg_reels_plays > 0 ? [<MetricCard key="reels" icon={CirclePlay} label="Reels Plays" value={formatFollowers(user.avg_reels_plays)} subtext="Avg reels views" colorClass="text-emerald-400" />] : []),
+              ...((user.gender || user.age_group) ? [<MetricCard key="audience" icon={Award} label="Audience" value={user.gender ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1) : user.age_group || "—"} subtext={user.age_group ? `Age: ${user.age_group}` : "Primary demographic"} colorClass="text-yellow-400" />] : []),
+            ].map((card, i) => (
+              <div key={i} className="anim-fade-in-up" style={{ animationDelay: `${80 + i * 50}ms` }}>
+                {card}
+              </div>
+            ))}
           </div>
         </div>
       </div>

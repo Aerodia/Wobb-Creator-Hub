@@ -89,7 +89,10 @@ export function Layout({ children, title, subtitle, headerActions }: LayoutProps
             >
               <Bookmark className="w-4 h-4 flex-shrink-0 text-indigo-400" />
               <span className="flex-1 text-left">My List</span>
-              <span className="text-[11px] font-semibold bg-indigo-500/15 text-indigo-400 px-1.5 py-0.5 rounded-full border border-indigo-500/25">
+              <span
+                key={selectedProfiles.length}
+                className="text-[11px] font-semibold bg-indigo-500/15 text-indigo-400 px-1.5 py-0.5 rounded-full border border-indigo-500/25 anim-badge-bump"
+              >
                 {selectedProfiles.length}
               </span>
               <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-200 ${listExpanded ? "rotate-90" : ""}`} />
@@ -97,10 +100,11 @@ export function Layout({ children, title, subtitle, headerActions }: LayoutProps
 
             {listExpanded && (
               <div className="flex-1 overflow-y-auto space-y-0.5 mt-1 min-h-0">
-                {selectedProfiles.map((profile) => (
+                {selectedProfiles.map((profile, idx) => (
                   <div
                     key={profile.user_id}
-                    className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-[var(--bg-elevated)] group transition-colors"
+                    className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-[var(--bg-elevated)] group transition-colors anim-slide-left"
+                  style={{ animationDelay: `${Math.min(idx, 6) * 30}ms` }}
                   >
                     <Avatar
                       src={profile.picture}
