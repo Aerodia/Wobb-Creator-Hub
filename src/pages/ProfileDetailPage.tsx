@@ -8,9 +8,11 @@ import { useListStore } from "@/store/useListStore";
 import { Avatar } from "@/components/Avatar";
 import { MetricCard } from "@/components/MetricCard";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
+import { CreatorRadarChart } from "@/components/charts/CreatorRadarChart";
+import { CreatorBarChart } from "@/components/charts/CreatorBarChart";
 import {
   ArrowLeft, ExternalLink, Bookmark, BookmarkCheck,
-  Users, Heart, MessageSquare, Eye, Layers, Activity, Award, CirclePlay,
+  Users, Heart, MessageSquare, Eye, Layers, Activity, Award, CirclePlay, BarChart2,
 } from "lucide-react";
 
 const PLATFORM_META: Record<string, { color: string; bg: string; border: string; glow: string; label: string }> = {
@@ -65,6 +67,10 @@ export function ProfileDetailPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[...Array(4)].map((_, i) => <div key={i} className="h-24 shimmer rounded-xl" />)}
           </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="h-72 shimmer rounded-2xl" />
+            <div className="h-72 shimmer rounded-2xl" />
+          </div>
         </div>
       </Layout>
     );
@@ -94,6 +100,10 @@ export function ProfileDetailPage() {
   }
 
   const user: FullUserProfile = profileData.data.user_profile;
+
+  const hasChartData =
+    (user.followers ?? 0) > 0 &&
+    ((user.avg_likes ?? 0) > 0 || (user.avg_views ?? 0) > 0 || (user.avg_reels_plays ?? 0) > 0);
 
   return (
     <Layout
@@ -132,12 +142,10 @@ export function ProfileDetailPage() {
           className="surface-card p-6 flex flex-col sm:flex-row gap-5 items-start anim-fade-in-up relative overflow-hidden"
           style={{ animationDelay: "60ms" }}
         >
-          {/* Platform glow background */}
           <div
             className="absolute -top-16 -right-16 w-64 h-64 rounded-full pointer-events-none"
             style={{ background: `radial-gradient(circle, ${meta.glow}20 0%, transparent 70%)` }}
           />
-          {/* Platform top accent bar */}
           <div
             className={`absolute top-0 left-0 right-0 h-0.5 platform-bar-${platform}`}
             style={{ borderRadius: "14px 14px 0 0" }}
@@ -186,8 +194,6 @@ export function ProfileDetailPage() {
             {user.description && (
               <p className="text-sm text-[var(--text-muted)] leading-relaxed max-w-2xl">{user.description}</p>
             )}
-
-            {/* Demographics */}
             {(user.gender || user.age_group) && (
               <div className="flex items-center gap-3 mt-3 flex-wrap">
                 {user.gender && (
@@ -213,20 +219,19 @@ export function ProfileDetailPage() {
           >
             Performance Metrics
           </h3>
-
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {[
-              <MetricCard key="followers" icon={Users}         label="Followers"    value={formatFollowers(user.followers)} subtext="Total audience"       colorClass="text-indigo-400" />,
-              <MetricCard key="engagement" icon={Activity}     label="Engagement"   value={user.engagement_rate !== undefined ? (user.engagement_rate * 100).toFixed(2) + "%" : "N/A"} subtext="Interaction rate" colorClass="text-pink-400" />,
-              ...(user.posts_count !== undefined         ? [<MetricCard key="posts"     icon={Layers}        label="Posts"        value={user.posts_count.toLocaleString()} subtext="Total publications"  colorClass="text-cyan-400" />]    : []),
-              ...(user.avg_likes !== undefined           ? [<MetricCard key="likes"     icon={Heart}         label="Avg Likes"    value={formatFollowers(user.avg_likes)}   subtext="Per post average"   colorClass="text-rose-400" />]    : []),
-              ...(user.avg_comments !== undefined        ? [<MetricCard key="comments"  icon={MessageSquare} label="Avg Comments" value={user.avg_comments.toLocaleString()} subtext="Per post average"  colorClass="text-violet-400" />]  : []),
+              <MetricCard key="followers"  icon={Users}         label="Followers"    value={formatFollowers(user.followers)} subtext="Total audience"      colorClass="text-indigo-400" />,
+              <MetricCard key="engagement" icon={Activity}      label="Engagement"   value={user.engagement_rate !== undefined ? (user.engagement_rate * 100).toFixed(2) + "%" : "N/A"} subtext="Interaction rate" colorClass="text-pink-400" />,
+              ...(user.posts_count !== undefined          ? [<MetricCard key="posts"    icon={Layers}        label="Posts"        value={user.posts_count.toLocaleString()} subtext="Total publications" colorClass="text-cyan-400" />]    : []),
+              ...(user.avg_likes !== undefined            ? [<MetricCard key="likes"    icon={Heart}         label="Avg Likes"    value={formatFollowers(user.avg_likes)}   subtext="Per post average"  colorClass="text-rose-400" />]    : []),
+              ...(user.avg_comments !== undefined         ? [<MetricCard key="comments" icon={MessageSquare} label="Avg Comments" value={user.avg_comments.toLocaleString()} subtext="Per post average" colorClass="text-violet-400" />]  : []),
               ...(user.avg_views !== undefined && user.avg_views > 0
-                ? [<MetricCard key="views"    icon={Eye}           label="Avg Views"   value={formatFollowers(user.avg_views)} subtext="Video view average"  colorClass="text-amber-400" />] : []),
+                ? [<MetricCard key="views"    icon={Eye}        label="Avg Views"    value={formatFollowers(user.avg_views)} subtext="Video view average"  colorClass="text-amber-400" />] : []),
               ...(user.avg_reels_plays !== undefined && user.avg_reels_plays > 0
-                ? [<MetricCard key="reels"    icon={CirclePlay}    label="Reels Plays" value={formatFollowers(user.avg_reels_plays)} subtext="Avg reels views" colorClass="text-emerald-400" />] : []),
+                ? [<MetricCard key="reels"    icon={CirclePlay} label="Reels Plays"  value={formatFollowers(user.avg_reels_plays)} subtext="Avg reels views" colorClass="text-emerald-400" />] : []),
               ...((user.gender || user.age_group)
-                ? [<MetricCard key="audience" icon={Award}         label="Audience"    value={user.gender ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1) : user.age_group || "—"} subtext={user.age_group ? `Age: ${user.age_group}` : "Primary demographic"} colorClass="text-yellow-400" />] : []),
+                ? [<MetricCard key="audience" icon={Award}      label="Audience"     value={user.gender ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1) : user.age_group || "—"} subtext={user.age_group ? `Age: ${user.age_group}` : "Primary demographic"} colorClass="text-yellow-400" />] : []),
             ].map((card, i) => (
               <div key={i} className="anim-fade-in-up" style={{ animationDelay: `${80 + i * 55}ms` }}>
                 {card}
@@ -234,6 +239,25 @@ export function ProfileDetailPage() {
             ))}
           </div>
         </div>
+
+        {/* ── Analytics Charts ── */}
+        {hasChartData && (
+          <div className="anim-fade-in-up" style={{ animationDelay: "220ms" }}>
+            <div className="flex items-center gap-2 mb-3">
+              <BarChart2 className="w-3.5 h-3.5" style={{ color: "var(--text-muted)" }} />
+              <h3
+                className="text-[10px] font-bold uppercase tracking-[0.15em]"
+                style={{ color: "var(--text-muted)" }}
+              >
+                Analytics
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <CreatorBarChart user={user} accentColor={meta.color} />
+              <CreatorRadarChart user={user} platform={platform} accentColor={meta.color} />
+            </div>
+          </div>
+        )}
       </div>
     </Layout>
   );

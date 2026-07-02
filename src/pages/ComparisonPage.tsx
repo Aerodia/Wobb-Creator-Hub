@@ -5,6 +5,7 @@ import { useListStore, type SelectedProfile } from "@/store/useListStore";
 import { Avatar } from "@/components/Avatar";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { formatFollowers, formatEngagementRate } from "@/utils/formatters";
+import { ComparisonBarChart } from "@/components/charts/ComparisonBarChart";
 import {
   GitCompareArrows,
   Users,
@@ -20,6 +21,8 @@ import {
   Bookmark,
   ArrowLeft,
   ExternalLink,
+  BarChart2,
+  TableIcon,
 } from "lucide-react";
 
 // ─── Factor definitions ────────────────────────────────────────────────────
@@ -251,6 +254,8 @@ export function ComparisonPage() {
   const [activeFactors, setActiveFactors] = useState<Set<FactorKey>>(
     new Set(FACTORS.map((f) => f.key))
   );
+  // Toggle between chart and table view
+  const [viewMode, setViewMode] = useState<"chart" | "table">("chart");
 
   const toggleFactor = (key: FactorKey) => {
     setActiveFactors((prev) => {
@@ -317,6 +322,35 @@ export function ComparisonPage() {
                 </span>
               </div>
               <div className="flex items-center gap-2">
+                <div
+                  className="flex items-center gap-0.5 p-1 rounded-lg"
+                  style={{ background: "var(--bg-base)", border: "1px solid var(--border-subtle)" }}
+                >
+                  <button
+                    onClick={() => setViewMode("chart")}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer transition-all"
+                    style={
+                      viewMode === "chart"
+                        ? { color: "var(--accent)", background: "var(--accent-bg)", border: "1px solid var(--accent-border)" }
+                        : { color: "var(--text-muted)", background: "transparent", border: "1px solid transparent" }
+                    }
+                  >
+                    <BarChart2 className="w-3 h-3" />
+                    Chart
+                  </button>
+                  <button
+                    onClick={() => setViewMode("table")}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer transition-all"
+                    style={
+                      viewMode === "table"
+                        ? { color: "var(--accent)", background: "var(--accent-bg)", border: "1px solid var(--accent-border)" }
+                        : { color: "var(--text-muted)", background: "transparent", border: "1px solid transparent" }
+                    }
+                  >
+                    <TableIcon className="w-3 h-3" />
+                    Table
+                  </button>
+                </div>
                 <button
                   onClick={selectAll}
                   className="text-[11px] font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors cursor-pointer"
@@ -377,9 +411,20 @@ export function ComparisonPage() {
           </div>
         )}
 
-        {/* ── Comparison Table ── */}
+        {/* ── Chart or Table ── */}
         {hasEnough && (
-          <div className="anim-fade-in-up" style={{ animationDelay: "80ms" }}>
+          <div>
+            {/* Chart view */}
+            {viewMode === "chart" && (
+              <ComparisonBarChart
+                profiles={selectedProfiles}
+                activeFactorKeys={Array.from(activeFactors)}
+              />
+            )}
+
+            {/* Table view */}
+            {viewMode === "table" && (
+              <div className="anim-fade-in-up" style={{ animationDelay: "80ms" }}>
             <div
               className="overflow-x-auto rounded-xl border"
               style={{ borderColor: "var(--border-subtle)" }}
@@ -537,6 +582,8 @@ export function ComparisonPage() {
                 {selectedProfiles.length} creators · {visibleFactors.length} factors
               </div>
             </div>
+          </div>
+            )}
           </div>
         )}
       </div>
